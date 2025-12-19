@@ -1,10 +1,10 @@
 # CSV to Markdown Converter for LLM
 
-Outil de conversion de fichiers CSV en Markdown structuré (clé/valeur), optimisé pour l'ingestion par des modèles de langage (LLM), systèmes RAG et chatbots.
+Convertisseur CSV vers Markdown structuré (clé/valeur), optimisé pour LLM, RAG et chatbots.
 
-## Aperçu
+## Démo
 
-Cette application web légère permet de transformer vos fichiers CSV en documents Markdown lisibles et structurés, facilitant leur utilisation dans des pipelines d'intelligence artificielle.
+https://fazcodefr.github.io/csv-to-markdown-key-value-llm/
 
 ## Fonctionnalités
 
@@ -24,7 +24,6 @@ Chaque ligne du CSV est convertie en bloc Markdown :
     # Valeur Colonne 1 - Valeur Colonne 2
     **Colonne 3 :** Valeur
     **Colonne 4 :** Valeur
-    **Colonne 5 :** Valeur
     
     ---
 
@@ -33,17 +32,16 @@ Les colonnes sélectionnées pour le titre ne sont pas répétées dans le corps
 ## Utilisation
 
 ### En ligne
-Ouvrez le fichier index.html dans votre navigateur ou hébergez-le sur n'importe quel serveur web statique (GitHub Pages, Netlify, Vercel...).
+Accédez à la démo ci-dessus ou hébergez le fichier sur n'importe quel serveur web statique.
 
 ### En local
-Double-cliquez simplement sur le fichier index.html pour l'ouvrir dans votre navigateur par défaut. Aucune installation requise.
+Ouvrez index.html directement dans votre navigateur. Aucune installation requise.
 
 ## Technologies
 
-- HTML5
-- CSS3 (Tailwind CSS)
+- HTML5 / CSS3 (Tailwind CSS)
 - JavaScript (Vanilla)
-- PapaParse (parsing CSV)
+- PapaParse
 
 ## Installation
 
@@ -54,15 +52,11 @@ Aucune dépendance serveur, aucun build nécessaire.
 
 ## Cas d'usage
 
-- Préparation de données pour des systèmes RAG (Retrieval-Augmented Generation)
-- Création de bases de connaissances pour chatbots
-- Formatage de données pour fine-tuning de modèles
-- Documentation structurée à partir de données tabulaires
+- Préparation de données pour systèmes RAG
+- Bases de connaissances pour chatbots
+- Formatage pour fine-tuning de modèles
+- Documentation structurée depuis données tabulaires
 
 ## Licence
 
 MIT
-
-## Auteur
-
-LYVOC
