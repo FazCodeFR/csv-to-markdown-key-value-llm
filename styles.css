@@ -1,0 +1,182 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+.gradient-bg {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.glass-effect {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.file-upload-zone {
+    transition: all 0.3s ease;
+}
+
+.file-upload-zone:hover {
+    transform: translateY(-2px);
+}
+
+.file-upload-zone.dragover {
+    background: rgba(102, 126, 234, 0.1);
+    border-color: #667eea;
+    transform: scale(1.02);
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.float-animation {
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.animate-slide-in {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.animate-pulse-once {
+    animation: pulse 0.6s ease-in-out;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    transition: all 0.3s ease;
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+}
+
+.btn-copy {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    transition: all 0.3s ease;
+}
+
+.btn-copy:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+}
+
+.btn-delete {
+    transition: all 0.2s ease;
+}
+
+.btn-delete:hover {
+    transform: scale(1.1);
+}
+
+.file-item {
+    transition: all 0.3s ease;
+}
+
+.file-item:hover {
+    background: rgba(102, 126, 234, 0.02);
+}
+
+/* Config panel */
+.config-panel {
+    animation: expandIn 0.2s ease-out;
+}
+
+@keyframes expandIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Column config items */
+.column-config-item {
+    transition: all 0.15s ease;
+}
+
+.column-config-item:hover {
+    transform: translateX(2px);
+}
+
+/* Sortable styles */
+.sortable-ghost {
+    opacity: 0.4;
+    background: rgba(102, 126, 234, 0.1);
+    border: 2px dashed #667eea;
+}
+
+.sortable-chosen {
+    background: white;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.25);
+    transform: scale(1.02);
+}
+
+.sortable-drag {
+    opacity: 1;
+    background: white;
+    box-shadow: 0 12px 35px rgba(102, 126, 234, 0.3);
+}
+
+.drag-handle {
+    touch-action: none;
+}
+
+.column-number {
+    transition: all 0.2s ease;
+}
+
+/* Custom scrollbar for config sections */
+.config-panel ::-webkit-scrollbar {
+    width: 6px;
+}
+
+.config-panel ::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.config-panel ::-webkit-scrollbar-thumb {
+    background: rgba(102, 126, 234, 0.3);
+    border-radius: 3px;
+}
+
+.config-panel ::-webkit-scrollbar-thumb:hover {
+    background: rgba(102, 126, 234, 0.5);
+}
+
