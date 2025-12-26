@@ -11,8 +11,49 @@ const globalStats = document.getElementById('globalStats');
 const hideEmptyValuesCheckbox = document.getElementById('hideEmptyValues');
 
 let selectedFiles = [];
-let fileSettings = []; // { columns: [{name, included, isTitle}], originalColumns: [], previewData: [], expanded: false }
+let fileSettings = []; // { columns: [{name, included, isTitle}], originalColumns: [], previewData: [], expanded: false, metadata: '', previewMode: 'rendered' }
 let convertedFiles = [];
+
+const STORAGE_KEY = 'csv-to-md-descriptions';
+
+/**
+ * Sauvegarde les descriptions des fichiers dans le localStorage
+ */
+function saveDescriptionsToStorage() {
+    const descriptions = {};
+    selectedFiles.forEach((file, index) => {
+        const metadata = fileSettings[index]?.metadata;
+        if (metadata && metadata.trim()) {
+            descriptions[file.name] = metadata;
+        }
+    });
+
+    // Fusionner avec les descriptions existantes
+    const existing = loadDescriptionsFromStorage();
+    const merged = { ...existing, ...descriptions };
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+}
+
+/**
+ * Charge les descriptions depuis le localStorage
+ */
+function loadDescriptionsFromStorage() {
+    try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        return stored ? JSON.parse(stored) : {};
+    } catch (e) {
+        return {};
+    }
+}
+
+/**
+ * Récupère la description sauvegardée pour un fichier
+ */
+function getSavedDescription(filename) {
+    const descriptions = loadDescriptionsFromStorage();
+    return descriptions[filename] || '';
+}
 
 /**
  * Détecte l'encodage et décode le fichier en UTF-8
@@ -99,6 +140,7 @@ csvFilesInput.addEventListener('change', (e) => {
 async function addFiles(files) {
     for (const file of files) {
         const { columns, previewData } = await parseFileWithPreview(file);
+        const savedDescription = getSavedDescription(file.name);
         selectedFiles.push(file);
         fileSettings.push({
             columns: columns.map((name, idx) => ({
@@ -108,7 +150,9 @@ async function addFiles(files) {
             })),
             originalColumns: columns,
             previewData: previewData,
-            expanded: false
+            expanded: false,
+            metadata: savedDescription,
+            previewMode: 'rendered' // 'raw' or 'rendered'
         });
     }
     updateFileList();
@@ -120,12 +164,12 @@ async function parseFileWithPreview(file) {
     return new Promise((resolve) => {
         Papa.parse(content, {
             header: true,
-            preview: 5, // Header + 4 rows
+            preview: 3, // Header + 2 rows
             delimitersToGuess: [';', ',', '\t', '|'],
             complete: (results) => {
                 resolve({
                     columns: results.meta.fields || [],
-                    previewData: results.data.slice(0, 4) // First 4 entries
+                    previewData: results.data.slice(0, 2) // First 2 entries
                 });
             },
             error: () => resolve({ columns: [], previewData: [] })
@@ -188,6 +232,23 @@ function updateFileList() {
 
             <!-- Collapsible section -->
             <div id="config-section-${index}" class="config-panel ${settings.expanded ? '' : 'hidden'}">
+                <!-- Metadata section -->
+                <div class="p-4 border-t border-gray-200 bg-gradient-to-r from-amber-50 to-orange-50">
+                    <h4 class="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Métadonnées
+                        <span class="ml-auto text-xs font-normal text-gray-500">Description pour l'IA</span>
+                    </h4>
+                    <textarea
+                        id="metadata-${index}"
+                        placeholder="Décrivez le contenu de ce fichier pour aider l'IA à mieux le comprendre (ex: Liste des produits avec leurs prix et stocks, Historique des commandes clients...)"
+                        onchange="updateMetadata(${index}, this.value)"
+                        class="w-full px-3 py-2 text-sm border border-amber-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent resize-y min-h-[60px] bg-white"
+                    >${settings.metadata}</textarea>
+                </div>
+
                 <!-- Two column layout -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-0 lg:gap-0">
                     <!-- Column config section -->
@@ -212,7 +273,15 @@ function updateFileList() {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                             </svg>
                             Aperçu Markdown
-                            <span class="ml-auto text-xs font-normal text-gray-500">${settings.previewData.length} entrées</span>
+                            <div class="ml-auto flex items-center gap-2">
+                                <span class="text-xs font-normal text-gray-500">${settings.previewData.length} entrées</span>
+                                <button onclick="togglePreviewMode(${index})" class="preview-toggle flex items-center gap-1.5 px-2 py-1 text-xs rounded-md border transition-all ${settings.previewMode === 'rendered' ? 'bg-blue-100 border-blue-300 text-blue-700' : 'bg-gray-100 border-gray-300 text-gray-600 hover:bg-gray-200'}">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        ${settings.previewMode === 'rendered' ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>' : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>'}
+                                    </svg>
+                                    ${settings.previewMode === 'rendered' ? 'Rendu' : 'Brut'}
+                                </button>
+                            </div>
                         </h4>
                         <div id="preview-container-${index}">
                             ${generatePreviewHTML(settings)}
@@ -254,14 +323,52 @@ function generatePreviewHTML(settings) {
     const hideEmpty = hideEmptyValuesCheckbox.checked;
     const rawMarkdown = generateRawMarkdownPreview(settings, hideEmpty);
 
-    return `
-        <pre class="bg-gray-900 text-gray-100 rounded-lg p-4 text-xs font-mono overflow-x-auto whitespace-pre-wrap break-words leading-relaxed">${escapeHtml(rawMarkdown)}</pre>
-    `;
+    if (settings.previewMode === 'raw') {
+        return `
+            <pre class="bg-gray-900 text-gray-100 rounded-lg p-4 text-xs font-mono overflow-x-auto whitespace-pre-wrap break-words leading-relaxed">${escapeHtml(rawMarkdown)}</pre>
+        `;
+    } else {
+        return `
+            <div class="bg-white rounded-lg p-4 border border-gray-200 prose prose-sm max-w-none overflow-x-auto">
+                ${renderMarkdownToHTML(rawMarkdown)}
+            </div>
+        `;
+    }
+}
+
+function renderMarkdownToHTML(markdown) {
+    // Simple markdown to HTML converter
+    let html = escapeHtml(markdown);
+
+    // Convert blockquotes (metadata)
+    html = html.replace(/^&gt; (.+)$/gm, '<blockquote class="border-l-4 border-amber-400 bg-amber-50 pl-3 py-1 my-2 text-sm text-amber-800 italic">$1</blockquote>');
+
+    // Convert headers
+    html = html.replace(/^# (.+)$/gm, '<h1 class="text-lg font-bold text-purple-700 mt-4 mb-2 first:mt-0">$1</h1>');
+
+    // Convert bold with key-value format
+    html = html.replace(/\*\*(.+?) :\*\* (.*)$/gm, '<p class="text-sm my-1"><span class="font-semibold text-gray-700">$1 :</span> <span class="text-gray-600">$2</span></p>');
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold">$1</strong>');
+
+    // Convert horizontal rules
+    html = html.replace(/^---$/gm, '<hr class="my-4 border-gray-300">');
+
+    // Remove extra newlines (block elements already have proper spacing)
+    html = html.replace(/\n+/g, '');
+
+    return html;
 }
 
 function generateRawMarkdownPreview(settings, hideEmpty) {
     const titleColumns = settings.columns.filter(c => c.isTitle && c.included);
     const bodyColumns = settings.columns.filter(c => !c.isTitle && c.included);
+
+    let result = '';
+
+    // Ajouter les métadonnées si présentes
+    if (settings.metadata && settings.metadata.trim()) {
+        result += `> ${settings.metadata.trim()}\n\n`;
+    }
 
     const entries = settings.previewData.map(row => {
         const titleParts = titleColumns.map(col => row[col.name] || 'Inconnu');
@@ -276,7 +383,8 @@ function generateRawMarkdownPreview(settings, hideEmpty) {
         return md;
     });
 
-    return entries.join('\n---\n\n');
+    result += entries.join('\n---\n\n');
+    return result;
 }
 
 function escapeHtml(text) {
@@ -412,6 +520,17 @@ function toggleColumnTitle(fileIndex, colIndex) {
     updateFileConfigSection(fileIndex);
 }
 
+function updateMetadata(fileIndex, value) {
+    fileSettings[fileIndex].metadata = value;
+    updatePreview(fileIndex);
+}
+
+function togglePreviewMode(fileIndex) {
+    const settings = fileSettings[fileIndex];
+    settings.previewMode = settings.previewMode === 'raw' ? 'rendered' : 'raw';
+    updateFileConfigSection(fileIndex);
+}
+
 function updateFileConfigSection(fileIndex) {
     const settings = fileSettings[fileIndex];
 
@@ -469,6 +588,9 @@ convertBtn.addEventListener('click', async () => {
     convertBtn.disabled = true;
     convertBtnText.innerHTML = '<svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Conversion...';
 
+    // Sauvegarder les descriptions dans le localStorage
+    saveDescriptionsToStorage();
+
     convertedFiles = [];
     const hideEmptyValues = hideEmptyValuesCheckbox.checked;
 
@@ -504,7 +626,8 @@ async function convertFile(file, settings, hideEmptyValues) {
                     results.data,
                     settings.columns,
                     hideEmptyValues,
-                    stats
+                    stats,
+                    settings.metadata
                 );
 
                 convertedFiles.push({
@@ -524,13 +647,20 @@ async function convertFile(file, settings, hideEmptyValues) {
     });
 }
 
-function convertToMarkdown(data, columns, hideEmptyValues = true, stats = {}) {
+function convertToMarkdown(data, columns, hideEmptyValues = true, stats = {}, metadata = '') {
     if (!data || !data.length) return { content: '', stats };
 
     // Filtrer les colonnes incluses
     const includedColumns = columns.filter(c => c.included);
     const titleColumns = includedColumns.filter(c => c.isTitle);
     const bodyColumns = includedColumns.filter(c => !c.isTitle);
+
+    let result = '';
+
+    // Ajouter les métadonnées si présentes
+    if (metadata && metadata.trim()) {
+        result += `> ${metadata.trim()}\n\n`;
+    }
 
     const entries = data.map(row => {
         // Construire le titre avec les colonnes marquées comme titre
@@ -553,7 +683,8 @@ function convertToMarkdown(data, columns, hideEmptyValues = true, stats = {}) {
         return md;
     });
 
-    return { content: entries.join('\n---\n\n'), stats };
+    result += entries.join('\n---\n\n');
+    return { content: result, stats };
 }
 
 function displayResults() {

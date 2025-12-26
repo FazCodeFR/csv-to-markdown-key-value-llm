@@ -127,10 +127,6 @@ body {
 }
 
 /* Column config items */
-.column-config-item {
-    transition: all 0.15s ease;
-}
-
 .column-config-item:hover {
     transform: translateX(2px);
 }
@@ -156,6 +152,20 @@ body {
 
 .drag-handle {
     touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.column-config-item {
+    user-select: none;
+    -webkit-user-select: none;
+    transition: all 0.15s ease;
+}
+
+.column-config-item.sortable-chosen,
+.column-config-item.sortable-drag {
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .column-number {
